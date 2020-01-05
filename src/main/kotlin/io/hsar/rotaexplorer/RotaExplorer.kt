@@ -1,6 +1,6 @@
 package io.hsar.rotaexplorer
 
-import io.hsar.rotaexplorer.model.Assignment
+import io.hsar.rotaexplorer.model.Assignment.Committed
 import io.hsar.rotaexplorer.model.Assignment.Possibilities
 import io.hsar.rotaexplorer.model.Availability.AVAILABLE
 import io.hsar.rotaexplorer.model.Availability.AVAILABLE_IF_NEEDED
@@ -52,7 +52,7 @@ class RotaExplorer(val rotaSlotsToFill: List<RotaSlot>, private val responses: L
                                                         .value // We don't care about the weight after selecting the heaviest
                                                         .map { possibleAssignment ->
                                                             // For each possible person at the heaviest weight, make a new theoretical assignment and create a Rota
-                                                            (possibleRota.assignments + mapOf(rotaSlot to Assignment.Committed(possibleAssignment.person)))
+                                                            (possibleRota.assignments + mapOf(rotaSlot to Committed(possibleAssignment)))
                                                                     .let { newAssignments ->
                                                                         Rota(newAssignments)
                                                                     }
@@ -73,19 +73,29 @@ class RotaExplorer(val rotaSlotsToFill: List<RotaSlot>, private val responses: L
                     response.rotaSlotsToAvailability
                             .map { (rotaSlot, availability) ->
                                 // Available if needed is weighted for half, this produces desired weighting
-                                rotaSlot to when (availability) {
-                                    AVAILABLE -> 1.0
-                                    AVAILABLE_IF_NEEDED -> 0.5
-                                    NOT_AVAILABLE -> 0.0
-                                }
+                                Triple(
+                                        first = rotaSlot,
+                                        second = when (availability) {
+                                            AVAILABLE -> 1.0
+                                            AVAILABLE_IF_NEEDED -> 0.5
+                                            NOT_AVAILABLE -> 0.0
+                                        },
+                                        third = availability
+                                )
                             }
                             .let { rotaSlotsToAvailabilityWeights ->
                                 // Individual votes are divided by the total vote weight, this makes people who voted for fewer days more likely to serve on those days
                                 rotaSlotsToAvailabilityWeights
-                                        .sumByDouble { it.second }
+                                        .sumByDouble { (_, weight, _) ->
+                                            weight
+                                        }
                                         .let { totalAvailabilityWeight ->
-                                            rotaSlotsToAvailabilityWeights.map { (rotaSlot, availabilityWeight) ->
-                                                rotaSlot to PossibleAssignment(response.person, availabilityWeight / totalAvailabilityWeight)
+                                            rotaSlotsToAvailabilityWeights.map { (rotaSlot, availabilityWeight, availability) ->
+                                                rotaSlot to PossibleAssignment(
+                                                        person = response.person,
+                                                        possibilityWeight = availabilityWeight / totalAvailabilityWeight,
+                                                        personAvailability = availability
+                                                )
                                             }
                                         }
                             }
