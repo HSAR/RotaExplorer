@@ -7,14 +7,17 @@ class Rota : Comparable<Rota> {
 
     constructor(assignments: Map<RotaSlot, Assignment>) {
         this.assignments = assignments
-    }
-
-    constructor(rotaSlotsToFill: List<RotaSlot>) {
-        this.assignments = rotaSlotsToFill
-                .map { rotaSlot ->
-                    rotaSlot to Assignment.Possibilities()
+                .also { newAssignments ->
+                    newAssignments
+                            .map { (_, assignment) ->
+                                when (assignment) {
+                                    is Committed -> Unit // Do nothing
+                                    is Assignment.Possibilities -> if (assignment.possiblePeople.isEmpty()) {
+                                        throw IllegalArgumentException("Should not have any rota slots with no possible people.")
+                                    }
+                                }
+                            }
                 }
-                .toMap()
     }
 
     val assignments: Map<RotaSlot, Assignment>
