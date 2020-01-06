@@ -3,11 +3,11 @@ package io.hsar.rotaexplorer.model
 import io.hsar.rotaexplorer.model.Assignment.Committed
 import io.hsar.rotaexplorer.weight.WeightCalculator
 
-class Rota : Comparable<Rota> {
+class Rota(val assignments: Map<RotaSlot, Assignment>) : Comparable<Rota> {
 
-    constructor(assignments: Map<RotaSlot, Assignment>) {
-        this.assignments = assignments
-                .also { newAssignments ->
+    init {
+        assignments
+                .let { newAssignments ->
                     newAssignments
                             .map { (_, assignment) ->
                                 when (assignment) {
@@ -20,11 +20,7 @@ class Rota : Comparable<Rota> {
                 }
     }
 
-    val assignments: Map<RotaSlot, Assignment>
-
-    val weight: Double
-        get() = WeightCalculator.calculate(rota = this)
-
+    val weight: Double = WeightCalculator.calculate(rota = this)
     val isComplete: Boolean
         get() = assignments.values.all { assignment -> assignment is Committed }
 

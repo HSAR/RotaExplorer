@@ -4,8 +4,9 @@ import io.hsar.rotaexplorer.model.Rota
 
 object WeightCalculator {
 
-    val rules = listOf<Rule>(
-            ShouldAvoidIfNeeded()
+    val rules = listOf(
+            ShouldAvoidAvailableIfNeeded(),
+            ShouldAvoidSplitSlots()
     )
 
     fun calculate(rota: Rota): Double {

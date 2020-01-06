@@ -48,6 +48,7 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
                                                         .groupBy { possibleAssignment ->
                                                             possibleAssignment.possibilityWeight
                                                         }
+                                                        .filterNot { (weight, _) -> weight == 0.0 }
                                                         .maxBy { (weight, _) -> weight }!! // Heaviest possibilities (if tied) are all selected
                                                         .value // We don't care about the weight after selecting the heaviest
                                                         .map { possibleAssignment ->
@@ -59,11 +60,15 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
                                                         }
                                             }
                                 }
-                                .map { newPossibleRotas ->
-                                    priorityQueue.add(newPossibleRotas)
+                                .map { newPossibleRota ->
+                                    logger.debug("Trying new possibility with weight ${newPossibleRota.weight}")
+                                    priorityQueue.add(newPossibleRota)
                                 }
                     }
-                    return priorityQueue.peek()
+
+                    return priorityQueue.peek().also { finalRota ->
+                        logger.info("Selected rota with final weight of ${finalRota.weight}")
+                    }
                 }
     }
 
