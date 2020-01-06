@@ -53,21 +53,18 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
                                                         .value // We don't care about the weight after selecting the heaviest
                                                         .map { possibleAssignment ->
                                                             // For each possible person at the heaviest weight, make a new theoretical assignment and create a Rota
-                                                            (possibleRota.assignments + mapOf(rotaSlot to Committed(possibleAssignment)))
-                                                                    .let { newAssignments ->
-                                                                        Rota(newAssignments)
-                                                                    }
+                                                            Rota((possibleRota.assignments + mapOf(rotaSlot to Committed(possibleAssignment))))
                                                         }
                                             }
                                 }
                                 .map { newPossibleRota ->
-                                    logger.debug("Trying new possibility with weight ${newPossibleRota.weight}")
+                                    logger.debug("Trying new possibility: weight ${newPossibleRota.weight} and ${newPossibleRota.assignmentsMade} assignments to go.")
                                     priorityQueue.add(newPossibleRota)
                                 }
                     }
 
                     return priorityQueue.peek().also { finalRota ->
-                        logger.info("Selected rota with final weight of ${finalRota.weight}")
+                        logger.info("Selected rota with final weight of ${finalRota.weight}.")
                     }
                 }
     }
@@ -108,7 +105,6 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
                 .groupBy { (rotaSlot, _) -> rotaSlot }
                 .map { (rotaSlot, rotaSlotToPossibleAssignments) ->
                     rotaSlot to rotaSlotToPossibleAssignments
-                            .toMap()
                             .map { (_, possibleAssignment) ->
                                 possibleAssignment
                             }

@@ -21,8 +21,12 @@ class Rota(val assignments: Map<RotaSlot, Assignment>) : Comparable<Rota> {
     }
 
     val weight: Double = WeightCalculator.calculate(rota = this)
+
     val isComplete: Boolean
         get() = assignments.values.all { assignment -> assignment is Committed }
+
+    val assignmentsMade: Int
+        get() = assignments.values.count { assignment -> assignment is Committed }
 
     override fun compareTo(other: Rota): Int {
         return this.weight.compareTo(other.weight)
