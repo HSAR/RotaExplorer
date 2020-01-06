@@ -12,7 +12,7 @@ import io.hsar.rotaexplorer.model.RotaSlot
 import org.slf4j.LoggerFactory
 import java.util.PriorityQueue
 
-class RotaExplorer(val rotaSlotsToFill: List<RotaSlot>, private val responses: List<Response>) {
+class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), private val responses: List<Response>) {
 
     companion object {
         val logger = LoggerFactory.getLogger(RotaExplorer::class.java)
@@ -37,7 +37,7 @@ class RotaExplorer(val rotaSlotsToFill: List<RotaSlot>, private val responses: L
                                             .filter { (_, assignment) ->
                                                 assignment is Possibilities
                                             }
-                                            .mapValues { assignment ->
+                                            .mapValues { (_, assignment) ->
                                                 assignment as Possibilities // Kotlin should have smart cast but it hasn't
                                             }
                                             .minBy { (_, possibilities) ->
@@ -67,7 +67,7 @@ class RotaExplorer(val rotaSlotsToFill: List<RotaSlot>, private val responses: L
                 }
     }
 
-    fun preparePriorityQueue(): PriorityQueue<Rota> {
+    private fun preparePriorityQueue(): PriorityQueue<Rota> {
         return responses
                 .flatMap { response ->
                     response.rotaSlotsToAvailability
