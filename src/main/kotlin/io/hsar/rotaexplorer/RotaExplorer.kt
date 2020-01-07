@@ -45,14 +45,9 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
                                             }!!
                                             .let { (rotaSlot, possibilities) ->
                                                 possibilities.possiblePeople
-                                                        .groupBy { possibleAssignment ->
-                                                            possibleAssignment.possibilityWeight
-                                                        }
-                                                        .filterNot { (weight, _) -> weight == 0.0 }
-                                                        .maxBy { (weight, _) -> weight }!! // Heaviest possibilities (if tied) are all selected
-                                                        .value // We don't care about the weight after selecting the heaviest
+                                                        .filterNot { possibleAssignment -> possibleAssignment.possibilityWeight == 0.0 }
                                                         .map { possibleAssignment ->
-                                                            // For each possible person at the heaviest weight, make a new theoretical assignment and create a Rota
+                                                            // For each possible person, make a new theoretical assignment and create a Rota
                                                             Rota((possibleRota.assignments + mapOf(rotaSlot to Committed(possibleAssignment))))
                                                         }
                                             }
@@ -73,17 +68,24 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
         return responses
                 .flatMap { response ->
                     response.rotaSlotsToAvailability
-                            .map { (rotaSlot, availability) ->
+                            .mapNotNull { (rotaSlot, availability) ->
                                 // Available if needed is weighted for half, this produces desired weighting
-                                Triple(
-                                        first = rotaSlot,
-                                        second = when (availability) {
-                                            AVAILABLE -> 1.0
-                                            AVAILABLE_IF_NEEDED -> 0.5
-                                            NOT_AVAILABLE -> 0.0
-                                        },
-                                        third = availability
-                                )
+                                val availabilityWeight = when (availability) {
+                                    AVAILABLE -> 1.0
+                                    AVAILABLE_IF_NEEDED -> 0.5
+                                    NOT_AVAILABLE -> null
+                                }
+
+                                // #TODO: There must be a better way to do this
+                                if (availabilityWeight == null) {
+                                    null
+                                } else {
+                                    Triple(
+                                            first = rotaSlot,
+                                            second = availabilityWeight,
+                                            third = availability
+                                    )
+                                }
                             }
                             .let { rotaSlotsToAvailabilityWeights ->
                                 // Individual votes are divided by the total vote weight, this makes people who voted for fewer days more likely to serve on those days
@@ -93,9 +95,14 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
                                         }
                                         .let { totalAvailabilityWeight ->
                                             rotaSlotsToAvailabilityWeights.map { (rotaSlot, availabilityWeight, availability) ->
+                                                // Normalise weight by the total availability weight so that people who vote more are less like to be chosen first
+                                                val normalisedWeight = availabilityWeight / totalAvailabilityWeight
+                                                // Invert weights so that the lowest normalised weights become the highest penalties for rota weight (explore them last)
+                                                val invertedWeight = 1 / normalisedWeight
+
                                                 rotaSlot to PossibleAssignment(
                                                         person = response.person,
-                                                        possibilityWeight = availabilityWeight / totalAvailabilityWeight,
+                                                        possibilityWeight = invertedWeight,
                                                         personAvailability = availability
                                                 )
                                             }
