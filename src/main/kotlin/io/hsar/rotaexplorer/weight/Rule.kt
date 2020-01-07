@@ -12,6 +12,9 @@ abstract class Rule {
      */
     abstract fun applyWeight(assignments: Map<RotaSlot, Assignment>): Double
 
+    /**
+     * Given a map of assignments, filters to only those which are Committed and casts it as such.
+     */
     protected fun Map<RotaSlot, Assignment>.filterByCommitted(): Map<RotaSlot, Committed> {
         return this
                 .filterValues { assignment ->
