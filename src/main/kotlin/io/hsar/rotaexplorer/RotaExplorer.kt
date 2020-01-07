@@ -46,6 +46,8 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
                                             .let { (rotaSlot, possibilities) ->
                                                 possibilities.possiblePeople
                                                         .filterNot { possibleAssignment -> possibleAssignment.possibilityWeight == 0.0 }
+                                                        .sortedBy { possibleAssignment -> possibleAssignment.possibilityWeight }
+                                                        .take(3) // Explore top three possibilities
                                                         .map { possibleAssignment ->
                                                             // For each possible person, make a new theoretical assignment and create a Rota
                                                             Rota((possibleRota.assignments + mapOf(rotaSlot to Committed(possibleAssignment))))
