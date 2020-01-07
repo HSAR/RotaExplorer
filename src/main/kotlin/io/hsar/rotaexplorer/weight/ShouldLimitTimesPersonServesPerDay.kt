@@ -7,13 +7,13 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * When possible, we should assign people to slots that are close to each other
+ * One person should not serve more than once a day.
  */
-class ShouldAvoidSplitSlots : Rule() {
+class ShouldLimitTimesPersonServesPerDay : Rule() {
 
     companion object {
-        private const val PENALTY_PER_NON_DOUBLED_SLOT = 0.2
-        private const val HOURS_BETWEEN_CLOSE_TIME_SLOTS = 2.0
+        private const val PENALTY_FOR_EXTENSIVE_SERVING = 12.1
+        private const val HOURS = 4.0
     }
 
     override fun applyWeight(assignments: Map<RotaSlot, Assignment>): Double {
@@ -25,10 +25,9 @@ class ShouldAvoidSplitSlots : Rule() {
                 .map { (_, rotaSlotsOnOneDay) ->
                     rotaSlotsOnOneDay.map { (rotaSlotOnOneDay, personAssignedToOneDay) ->
                         rotaSlotsOnOneDay.mapNotNull { (rotaSlotToCheckAgainst, personToCheckAgainst) ->
-                            // Check whether slots that are close to each other are assigned to different people
                             if (rotaSlotOnOneDay.startTime != rotaSlotToCheckAgainst.startTime &&
-                                    ChronoUnit.HOURS.between(rotaSlotOnOneDay.startTime, rotaSlotToCheckAgainst.startTime) < HOURS_BETWEEN_CLOSE_TIME_SLOTS &&
-                                    personAssignedToOneDay != personToCheckAgainst) {
+                                    personAssignedToOneDay == personToCheckAgainst &&
+                                    ChronoUnit.HOURS.between(rotaSlotOnOneDay.startTime, rotaSlotToCheckAgainst.startTime) > HOURS) {
                                 orderedPair(rotaSlotOnOneDay.startTime.toEpochSecond(), rotaSlotToCheckAgainst.startTime.toEpochSecond())
                             } else {
                                 null
@@ -37,8 +36,8 @@ class ShouldAvoidSplitSlots : Rule() {
                     }
                 }
                 .count()
-                .let { numberOfNonDoubledSlots ->
-                    numberOfNonDoubledSlots * PENALTY_PER_NON_DOUBLED_SLOT
+                .let { numberOfPeopleWhoServeMultipleTimesADay ->
+                    numberOfPeopleWhoServeMultipleTimesADay * ShouldLimitTimesPersonServesPerDay.PENALTY_FOR_EXTENSIVE_SERVING
                 }
                 .toDouble()
     }

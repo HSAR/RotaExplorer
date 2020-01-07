@@ -6,7 +6,8 @@ object WeightCalculator {
 
     val rules = listOf(
             ShouldAvoidAvailableIfNeeded(),
-            ShouldAvoidSplitSlots()
+            ShouldAvoidSplitSlots(),
+            ShouldLimitTimesPersonServesPerDay()
     )
 
     fun calculate(rota: Rota): Double {

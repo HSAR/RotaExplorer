@@ -10,7 +10,7 @@ import io.hsar.rotaexplorer.model.RotaSlot
 class ShouldAvoidAvailableIfNeeded : Rule() {
 
     companion object {
-        private const val PENALTY_PER_AVAILABLE_IF_NEEDED = 1
+        private const val PENALTY_PER_AVAILABLE_IF_NEEDED = 1.0
     }
 
     override fun applyWeight(assignments: Map<RotaSlot, Assignment>): Double {
