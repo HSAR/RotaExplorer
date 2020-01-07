@@ -3,6 +3,10 @@ package io.hsar.rotaexplorer.commandline
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.hsar.rotaexplorer.RotaExplorer
+import io.hsar.rotaexplorer.input.CSVResponsesParser
+import java.io.File
 import kotlin.system.exitProcess
 
 abstract class Command(val name: String) : Runnable
@@ -22,7 +26,12 @@ class FileSystemRotaCommand : Command("create-rota-filesystem") {
             throw IllegalArgumentException("Response input not found.")
         }
 
-        TODO("Not yet implemented")
+        val responses = CSVResponsesParser().parseFile(File(csvResponsesPath))
+
+        RotaExplorer(responses = responses).execute()
+                .let { result ->
+                    println(jacksonObjectMapper().writeValueAsString(result))
+                }
     }
 }
 
