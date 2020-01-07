@@ -22,8 +22,11 @@ class ShouldAvoidSplitSlots : Rule() {
                 .mapValues { (_, rotaSlotsOnOneDay) ->
                     rotaSlotsOnOneDay.map { rotaSlotOnOneDay ->
                         rotaSlotsOnOneDay.mapNotNull { rotaSlotToCheckAgainst ->
-                            // #TODO: Check slots that are close to each other, and if different people are doing it then add them
-                            null
+                            if (rotaSlotOnOneDay.startTime != rotaSlotToCheckAgainst.startTime &&
+                                    ChronoUnit.HOURS.between(rotaSlotOnOneDay.startTime, rotaSlotToCheckAgainst.startTime) < 2 &&
+                                    )
+//                            // #TODO: Check slots that are close to each other, and if different people are doing it then add them
+//                            null
                         }
                     }
                 }
