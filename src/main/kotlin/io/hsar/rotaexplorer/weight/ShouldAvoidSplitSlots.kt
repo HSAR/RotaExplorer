@@ -15,12 +15,12 @@ class ShouldAvoidSplitSlots : Rule() {
 
     override fun applyWeight(assignments: Map<RotaSlot, Assignment>): Double {
         return assignments.filterByCommitted()
-                .keys
-                .groupBy { test ->
-                    test.startTime.truncatedTo(ChronoUnit.DAYS)
+                .toList()
+                .groupBy { (key, _) ->
+                    key.startTime.truncatedTo(ChronoUnit.DAYS)
                 }
-                .mapValues { (_, rotaSlotsOnOneDay) ->
-                    rotaSlotsOnOneDay.map { rotaSlotOnOneDay ->
+                .map { (_, rotaSlotsOnOneDay) ->
+                    rotaSlotsOnOneDay.map { (rotaSlotOnOneDay, personAssignedToOneDay) ->
                         rotaSlotsOnOneDay.mapNotNull { rotaSlotToCheckAgainst ->
                             if (rotaSlotOnOneDay.startTime != rotaSlotToCheckAgainst.startTime &&
                                     ChronoUnit.HOURS.between(rotaSlotOnOneDay.startTime, rotaSlotToCheckAgainst.startTime) < 2 &&
