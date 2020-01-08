@@ -32,6 +32,10 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
                         priorityQueue
                                 .poll() // After we have dealt with a possible rota, we will queue all the resulting options
                                 .let { possibleRota ->
+                                    if (System.currentTimeMillis() % 1000 == 0L) {
+                                        logger.debug("Trying new possibility: weight ${possibleRota.weight} and ${possibleRota.assignmentsMade} / ${possibleRota.assignments.size} assignments made.")
+                                    }
+
                                     possibleRota
                                             .assignments
                                             .filter { (_, assignment) ->
@@ -55,7 +59,6 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
                                             }
                                 }
                                 .map { newPossibleRota ->
-                                    logger.debug("Trying new possibility: weight ${newPossibleRota.weight} and ${newPossibleRota.assignmentsMade} assignments to go.")
                                     priorityQueue.add(newPossibleRota)
                                 }
                     }

@@ -12,7 +12,7 @@ import kotlin.math.min
 class ShouldLimitTimesPersonServesPerDay : Rule() {
 
     companion object {
-        private const val PENALTY_FOR_EXTENSIVE_SERVING = 12.1
+        private const val PENALTY_FOR_EXTENSIVE_SERVING = 99.9
         private const val HOURS = 4.0
     }
 

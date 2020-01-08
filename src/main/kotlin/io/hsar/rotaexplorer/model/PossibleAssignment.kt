@@ -1,3 +1,3 @@
 package io.hsar.rotaexplorer.model
 
-class PossibleAssignment(val person: Person, val possibilityWeight: Double, val personAvailability: Availability)
+data class PossibleAssignment(val person: Person, val possibilityWeight: Double, val personAvailability: Availability)

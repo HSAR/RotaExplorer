@@ -2,6 +2,7 @@ package io.hsar.rotaexplorer.model
 
 import io.hsar.rotaexplorer.model.Assignment.Committed
 import io.hsar.rotaexplorer.weight.WeightCalculator
+import io.hsar.rotaexplorer.weight.WeightEstimator
 
 class Rota(val assignments: Map<RotaSlot, Assignment>) : Comparable<Rota> {
 
@@ -20,7 +21,7 @@ class Rota(val assignments: Map<RotaSlot, Assignment>) : Comparable<Rota> {
                 }
     }
 
-    val weight: Double = WeightCalculator.calculate(rota = this)
+    val weight: Double = WeightCalculator.calculate(rota = this) + WeightEstimator.calculate(rota = this)
 
     val isComplete: Boolean
         get() = assignments.values.all { assignment -> assignment is Committed }

@@ -1,6 +1,8 @@
 package io.hsar.rotaexplorer.weight
 
+import io.hsar.rotaexplorer.model.Assignment
 import io.hsar.rotaexplorer.model.Rota
+import io.hsar.rotaexplorer.model.RotaSlot
 
 object WeightCalculator {
 
@@ -8,9 +10,12 @@ object WeightCalculator {
             ShouldAvoidAvailableIfNeeded(),
             ShouldAvoidSplitSlots(),
             ShouldLimitTimesPersonServesPerDay(),
-            ShouldUsePeopleByWeight()
+            ShouldNotAllocateMoreThanAverage()
     )
 
+    /**
+     * Given a rota, calculates the current cost (representing how suboptimal it is)
+     */
     fun calculate(rota: Rota): Double {
         return rules
                 .map { rule ->
@@ -18,4 +23,17 @@ object WeightCalculator {
                 }
                 .sum()
     }
+}
+
+/**
+ * Given a map of assignments, filters to only those which are Committed and casts it as such.
+ */
+fun Map<RotaSlot, Assignment>.filterByCommitted(): Map<RotaSlot, Assignment.Committed> {
+    return this
+            .filterValues { assignment ->
+                (assignment is Assignment.Committed)
+            }
+            .mapValues { (_, assignment) ->
+                assignment as Assignment.Committed
+            }
 }
