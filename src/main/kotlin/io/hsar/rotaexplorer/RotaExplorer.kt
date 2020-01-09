@@ -6,11 +6,11 @@ import io.hsar.rotaexplorer.model.Availability.AVAILABLE
 import io.hsar.rotaexplorer.model.Availability.AVAILABLE_IF_NEEDED
 import io.hsar.rotaexplorer.model.Availability.NOT_AVAILABLE
 import io.hsar.rotaexplorer.model.PossibleAssignment
+import io.hsar.rotaexplorer.model.PossibleRotaNavigation
 import io.hsar.rotaexplorer.model.Response
 import io.hsar.rotaexplorer.model.Rota
 import io.hsar.rotaexplorer.model.RotaSlot
 import org.slf4j.LoggerFactory
-import java.util.PriorityQueue
 
 class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), private val responses: List<Response>) {
 
@@ -26,10 +26,10 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
      * Given a set of rota slots to fill and a list of responses, returns the rota with the fewest undesirable choices
      */
     fun execute(): Rota {
-        preparePriorityQueue()
-                .let { priorityQueue ->
-                    while (!priorityQueue.peek().isComplete) {
-                        priorityQueue
+        PossibleRotaNavigation(generateInitialRota())
+                .let { possibleRotaNavigation ->
+                    while (!possibleRotaNavigation.peek().isComplete) {
+                        possibleRotaNavigation
                                 .poll() // After we have dealt with a possible rota, we will queue all the resulting options
                                 .let { possibleRota ->
                                     if (System.currentTimeMillis() % 1000 == 0L) {
@@ -59,17 +59,17 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
                                             }
                                 }
                                 .map { newPossibleRota ->
-                                    priorityQueue.add(newPossibleRota)
+                                    possibleRotaNavigation.add(newPossibleRota)
                                 }
                     }
 
-                    return priorityQueue.peek().also { finalRota ->
+                    return possibleRotaNavigation.peek().also { finalRota ->
                         logger.info("Selected rota with final weight of ${finalRota.weight}.")
                     }
                 }
     }
 
-    private fun preparePriorityQueue(): PriorityQueue<Rota> {
+    private fun generateInitialRota(): Rota {
         return responses
                 .flatMap { response ->
                     response.rotaSlotsToAvailability
@@ -120,6 +120,7 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
                             .map { (_, possibleAssignment) ->
                                 possibleAssignment
                             }
+                            .toSet()
                             // Construct object for Rota initialisation
                             .let { possibleAssignments ->
                                 Possibilities(possibleAssignments)
@@ -134,8 +135,7 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
                         // Order of adding ensures that slots with possibilities write over slots without
                         rotaSlotsWithoutPossibilities + rotaSlotsWithPossibilities
                     }.let { allRotaSlots ->
-                        // Finish by adding the now-initialised Rota to the previously-created priority queue
-                        PriorityQueue(listOf(Rota(allRotaSlots)))
+                        Rota(allRotaSlots)
                     }
                 }
     }

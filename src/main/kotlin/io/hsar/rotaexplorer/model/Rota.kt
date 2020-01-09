@@ -4,7 +4,7 @@ import io.hsar.rotaexplorer.model.Assignment.Committed
 import io.hsar.rotaexplorer.weight.WeightCalculator
 import io.hsar.rotaexplorer.weight.WeightEstimator
 
-class Rota(val assignments: Map<RotaSlot, Assignment>) : Comparable<Rota> {
+data class Rota(val assignments: Map<RotaSlot, Assignment>) : Comparable<Rota> {
 
     init {
         assignments
