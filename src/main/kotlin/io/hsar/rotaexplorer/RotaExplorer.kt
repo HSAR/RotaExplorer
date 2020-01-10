@@ -100,14 +100,10 @@ class RotaExplorer(private val rotaSlotsToFill: List<RotaSlot> = emptyList(), pr
                                         }
                                         .let { totalAvailabilityWeight ->
                                             rotaSlotsToAvailabilityWeights.map { (rotaSlot, availabilityWeight, availability) ->
-                                                // Normalise weight by the total availability weight so that people who vote more are less like to be chosen first
-                                                val normalisedWeight = availabilityWeight / totalAvailabilityWeight
-                                                // Invert weights so that the lowest normalised weights become the highest penalties for rota weight (explore them last)
-                                                val invertedWeight = 1 / normalisedWeight
-
+                                                // Selection is by lowest first, so people who have voted the least will be assigned early
                                                 rotaSlot to PossibleAssignment(
                                                         person = response.person,
-                                                        possibilityWeight = invertedWeight,
+                                                        possibilityWeight = totalAvailabilityWeight,
                                                         personAvailability = availability
                                                 )
                                             }
